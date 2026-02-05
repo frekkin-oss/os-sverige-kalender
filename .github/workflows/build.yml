@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,24 +30,17 @@ jobs:
       - name: Generate ICS
         run: python generate_ics.py
 
-      - name: Commit and push if changed
+      - name: Prepare publish folder
         run: |
-          set -e
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          mkdir -p public
+          cp svenska-os-starter.ics public/
+          # GitHub Pages behöver ofta en indexfil (inte alltid, men bra att ha)
+          echo "OS Sverige kalender" > public/index.html
 
-          git add svenska-os-starter.ics
-          git diff --cached --quiet && exit 0
-          git commit -m "Update calendar"
-
-          # Försök pusha, och om det finns nya commits på remote: rebase och försök igen
-          for i in 1 2 3; do
-            git pull --rebase origin main || true
-            if git push; then
-              exit 0
-            fi
-            sleep 2
-          done
-
-          echo "Misslyckades pusha efter flera försök."
-          exit 1
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public
+          force_orphan: true
