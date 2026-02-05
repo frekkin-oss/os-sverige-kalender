@@ -34,7 +34,6 @@ jobs:
         run: |
           mkdir -p public
           cp svenska-os-starter.ics public/
-          # GitHub Pages behöver ofta en indexfil (inte alltid, men bra att ha)
           echo "OS Sverige kalender" > public/index.html
 
       - name: Publish to gh-pages
