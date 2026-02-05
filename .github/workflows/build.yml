@@ -34,10 +34,22 @@ jobs:
 
       - name: Commit and push if changed
         run: |
+          set -e
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
           git add svenska-os-starter.ics
           git diff --cached --quiet && exit 0
           git commit -m "Update calendar"
-          git pull --rebase origin main
-          git push
+
+          # Försök pusha, och om det finns nya commits på remote: rebase och försök igen
+          for i in 1 2 3; do
+            git pull --rebase origin main || true
+            if git push; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Misslyckades pusha efter flera försök."
+          exit 1
